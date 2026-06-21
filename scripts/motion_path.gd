@@ -59,27 +59,17 @@ func _to_transform(s: Dictionary) -> Transform3D:
 	return Transform3D(Basis(s["q"] as Quaternion), s["p"] as Vector3)
 
 
-## Write to JSON so the separate recording process can read it back.
-func save_json(path: String) -> bool:
+## Plain-data form (for embedding in a scene file / JSON).
+func to_dict() -> Dictionary:
 	var arr: Array = []
 	for s in samples:
 		var p: Vector3 = s["p"]
 		var q: Quaternion = s["q"]
 		arr.append({"t": s["t"], "p": [p.x, p.y, p.z], "q": [q.x, q.y, q.z, q.w]})
-	var f := FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return false
-	f.store_string(JSON.stringify({"samples": arr}))
-	f.close()
-	return true
+	return {"samples": arr}
 
 
-func load_json(path: String) -> bool:
-	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null:
-		return false
-	var data: Variant = JSON.parse_string(f.get_as_text())
-	f.close()
+func from_dict(data: Variant) -> bool:
 	if typeof(data) != TYPE_DICTIONARY or not (data as Dictionary).has("samples"):
 		return false
 	clear()

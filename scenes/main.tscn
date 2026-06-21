@@ -44,11 +44,21 @@ theme_override_constants/separation = 8
 
 [node name="LoadButton" type="Button" parent="UI/Controls"]
 layout_mode = 2
-text = "Load Model (.glb)"
+text = "Add Model (.glb)"
 
 [node name="SampleButton" type="Button" parent="UI/Controls"]
 layout_mode = 2
 text = "Try a Sample"
+
+[node name="PlaceButton" type="Button" parent="UI/Controls"]
+layout_mode = 2
+disabled = true
+text = "Place Selected"
+
+[node name="PilotButton" type="Button" parent="UI/Controls"]
+layout_mode = 2
+disabled = true
+text = "Pilot Selected"
 
 [node name="ModeButton" type="Button" parent="UI/Controls"]
 layout_mode = 2
@@ -73,6 +83,90 @@ text = "Drag to rotate • Scroll to zoom • Right-drag to pan"
 layout_mode = 2
 autowrap_mode = 2
 text = "Loading…"
+
+[node name="ScenePanel" type="PanelContainer" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -252.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 360.0
+grow_horizontal = 0
+
+[node name="SceneBox" type="VBoxContainer" parent="UI/ScenePanel"]
+theme_override_constants/separation = 6
+
+[node name="SceneTitle" type="Label" parent="UI/ScenePanel/SceneBox"]
+text = "Scene — models"
+
+[node name="ObjectsList" type="VBoxContainer" parent="UI/ScenePanel/SceneBox"]
+theme_override_constants/separation = 4
+
+[node name="PlayButton" type="Button" parent="UI/ScenePanel/SceneBox"]
+disabled = true
+text = "▶ Play scene"
+
+[node name="PlacePanel" type="PanelContainer" parent="UI"]
+visible = false
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -60.0
+offset_right = 320.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PlaceBox" type="HBoxContainer" parent="UI/PlacePanel"]
+theme_override_constants/separation = 6
+
+[node name="PlaceLabel" type="Label" parent="UI/PlacePanel/PlaceBox"]
+text = "Place:"
+
+[node name="RotLBtn" type="Button" parent="UI/PlacePanel/PlaceBox"]
+text = "⟲ Turn"
+
+[node name="RotRBtn" type="Button" parent="UI/PlacePanel/PlaceBox"]
+text = "Turn ⟳"
+
+[node name="SmallerBtn" type="Button" parent="UI/PlacePanel/PlaceBox"]
+text = "− Smaller"
+
+[node name="BiggerBtn" type="Button" parent="UI/PlacePanel/PlaceBox"]
+text = "+ Bigger"
+
+[node name="DropBtn" type="Button" parent="UI/PlacePanel/PlaceBox"]
+text = "⤓ Drop to floor"
+
+[node name="DonePlaceBtn" type="Button" parent="UI/PlacePanel/PlaceBox"]
+text = "✓ Done"
+
+[node name="PilotPanel" type="PanelContainer" parent="UI"]
+visible = false
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -60.0
+offset_right = 260.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PilotBox" type="HBoxContainer" parent="UI/PilotPanel"]
+theme_override_constants/separation = 6
+
+[node name="PilotLabel" type="Label" parent="UI/PilotPanel/PilotBox"]
+text = "Pilot:"
+
+[node name="RecordMotionBtn" type="Button" parent="UI/PilotPanel/PilotBox"]
+text = "● Record flight"
+
+[node name="DonePilotBtn" type="Button" parent="UI/PilotPanel/PilotBox"]
+text = "✓ Done"
 
 [node name="FileDialog" type="FileDialog" parent="UI"]
 title = "Open a 3D model"
