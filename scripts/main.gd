@@ -15,7 +15,7 @@ const RECORD_FPS := 60
 const MIN_CLIP_SECONDS := 0.3    ## ignore accidental too-short recordings
 
 ## This build's version. Bump it every time you publish a new build.
-const APP_VERSION := "0.7.0"
+const APP_VERSION := "0.8.0"
 ## A small JSON file you host online describing the latest version. Leave empty
 ## to disable update checks. Format:
 ##   {"version": "0.2.0", "url": "https://.../download", "notes": "What's new"}
@@ -207,6 +207,7 @@ func _add_model(path: String) -> void:
 	node.name = display
 	node.set_meta("source_path", path)
 	model_root.add_child(node)
+	_recenter_node(node)
 	_objects.append({"name": display, "path": path, "node": node, "motion": MotionPath.new()})
 	_selected = _objects.size() - 1
 	_refresh_object_list()
@@ -247,7 +248,10 @@ func _refresh_object_list() -> void:
 	for i in _objects.size():
 		var row := HBoxContainer.new()
 		var sel := Button.new()
-		sel.text = ("● " if i == _selected else "○ ") + str(_objects[i]["name"])
+		var has_flight: bool = (_objects[i]["motion"] as MotionPath).is_valid()
+		var flight_mark := "  ✈" if has_flight else ""
+		sel.text = ("● " if i == _selected else "○ ") + str(_objects[i]["name"]) + flight_mark
+		sel.tooltip_text = "Has a recorded flight (will move on Play/Record)" if has_flight else "No flight yet — pilot it to record one"
 		sel.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		sel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		sel.pressed.connect(_select_object.bind(i))
@@ -477,6 +481,7 @@ func _exit_pilot() -> void:
 	_apply_scene_pose(0.0)   # rest every animated object at its start
 	_update_mode_ui()
 	_update_scene_buttons()
+	_refresh_object_list()   # show the new ✈ flight marker
 	record_button.disabled = _objects.is_empty()
 	_frame_model()
 
@@ -561,7 +566,7 @@ func _toggle_play() -> void:
 		_playing = true
 		_play_time = 0.0
 		play_button.text = "■ Stop"
-		status_label.text = "Playing the scene…"
+		status_label.text = "Playing all recorded flights together…"
 
 
 func _stop_play() -> void:
@@ -1021,6 +1026,16 @@ func _instantiate_glb(path: String) -> Node3D:
 		return null
 	var scene := doc.generate_scene(state)
 	return scene as Node3D
+
+
+## Recenter a freshly added node so its footprint sits at the world origin and
+## its lowest point rests on the floor (y = 0). Fixes models (e.g. terrain) that
+## are authored with a large baked-in offset and would otherwise spawn far away.
+func _recenter_node(node: Node3D) -> void:
+	var box := _node_aabb(node)
+	var center := box.get_center()
+	node.global_position -= Vector3(center.x, 0.0, center.z)
+	node.global_position.y -= _node_aabb(node).position.y
 
 
 ## Combined world-space bounding box of every visible mesh in the scene.

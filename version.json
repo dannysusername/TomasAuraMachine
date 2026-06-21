@@ -1,6 +1,6 @@
 {
-  "version": "0.7.0",
+  "version": "0.8.0",
   "url": "https://github.com/dannysusername/TomasAuraMachine/releases/latest",
-  "download": "https://github.com/dannysusername/TomasAuraMachine/releases/download/v0.7.0/TomasAuraMachine-windows.zip",
-  "notes": "One-click updates: the app now downloads and installs updates by itself, then restarts."
+  "download": "https://github.com/dannysusername/TomasAuraMachine/releases/download/v0.8.0/TomasAuraMachine-windows.zip",
+  "notes": "Models now spawn right next to you — terrain and other models no longer appear far away."
 }
