@@ -1,0 +1,7 @@
+# Godot generated
+.godot/
+
+# Large binaries / build artifacts (shipped via Releases, not the repo)
+bin/
+build/
+assets/
