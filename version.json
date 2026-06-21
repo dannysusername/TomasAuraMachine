@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0",
+  "version": "0.4.0",
   "url": "https://github.com/dannysusername/TomasAuraMachine/releases/latest",
-  "notes": "The app now shows its version in the bottom-left corner. (Test build for updates.)"
+  "notes": "Diagnostic build: shows the update-check result on screen."
 }

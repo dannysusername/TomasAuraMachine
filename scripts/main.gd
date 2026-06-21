@@ -15,7 +15,7 @@ const RECORD_FPS := 60
 const MIN_CLIP_SECONDS := 0.3    ## ignore accidental too-short recordings
 
 ## This build's version. Bump it every time you publish a new build.
-const APP_VERSION := "0.3.0"
+const APP_VERSION := "0.4.0"
 ## A small JSON file you host online describing the latest version. Leave empty
 ## to disable update checks. Format:
 ##   {"version": "0.2.0", "url": "https://.../download", "notes": "What's new"}
@@ -801,23 +801,38 @@ func _check_for_updates() -> void:
 	if UPDATE_CHECK_URL.is_empty():
 		return
 	var http := HTTPRequest.new()
+	http.timeout = 12.0
 	add_child(http)
 	http.request_completed.connect(_on_update_check_completed)
-	http.request(UPDATE_CHECK_URL)
+	status_label.text = "Checking for updates…"
+	var err := http.request(UPDATE_CHECK_URL)
+	if err != OK:
+		status_label.text = "Update check couldn't start (error %d)." % err
 
 
 func _on_update_check_completed(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
-	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+	# NOTE: verbose on-screen reporting is temporary, to debug the update flow.
+	if result != HTTPRequest.RESULT_SUCCESS:
+		status_label.text = "Update check failed: network result %d (couldn't reach the server)." % result
+		return
+	if code != 200:
+		status_label.text = "Update check: server returned HTTP %d." % code
 		return
 	var data: Variant = JSON.parse_string(body.get_string_from_utf8())
 	if typeof(data) != TYPE_DICTIONARY:
+		status_label.text = "Update check: couldn't read the version file."
 		return
 	var dict := data as Dictionary
 	var latest := str(dict.get("version", ""))
-	if latest.is_empty() or not _is_newer(latest, APP_VERSION):
+	if latest.is_empty():
+		status_label.text = "Update check: no version listed."
+		return
+	if not _is_newer(latest, APP_VERSION):
+		status_label.text = "You're up to date (v%s)." % APP_VERSION
 		return
 	_update_url = str(dict.get("url", ""))
 	var notes := str(dict.get("notes", ""))
+	status_label.text = "Update available: v%s!" % latest
 	update_dialog.dialog_text = "A new version (%s) is available.\nYou have v%s.\n\n%s" % [latest, APP_VERSION, notes]
 	update_dialog.popup_centered()
 
