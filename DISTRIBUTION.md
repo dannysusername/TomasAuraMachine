@@ -32,13 +32,27 @@ Host this anywhere with a stable public URL, then paste that URL into
 - **A cloud drive direct link** (Dropbox/Drive) or **any static website**: also
   fine — just needs a stable URL the app can fetch.
 
+## Live setup (GitHub — configured ✓)
+- Repo: https://github.com/dannysusername/TomasAuraMachine (public)
+- The app checks: `https://raw.githubusercontent.com/dannysusername/TomasAuraMachine/main/version.json`
+  (this URL is baked into `UPDATE_CHECK_URL` in `scripts/main.gd`).
+- Builds are published as **GitHub Releases**; `version.json`'s `url` points at
+  `…/releases/latest`, so the Download button always opens the newest release.
+
 ## Publishing a new version (the routine)
 1. Make your changes.
 2. Bump `APP_VERSION` in `scripts/main.gd` (e.g. `0.1.0` → `0.2.0`).
-3. Export the Windows build (see below) and zip it **with `ffmpeg.exe` inside**.
-4. Upload that zip to your host.
-5. Update `version.json` (`version`, `url`, `notes`) and upload it.
-6. Next time your brother opens the app, he gets the update prompt.
+3. Rebuild + re-zip (see "Rebuild the Windows package" below).
+4. Publish a release and update `version.json`:
+   ```sh
+   gh release create v0.2.0 build/TomasAuraMachine-windows.zip \
+     --title "v0.2.0" --notes "What changed."
+   # edit version.json -> "version":"0.2.0", "notes":"What changed."
+   git add version.json scripts/main.gd && git commit -m "Release v0.2.0" && git push
+   ```
+5. Next time your brother opens the app, it sees the newer version and prompts him.
+
+> In practice: just tell the assistant "publish an update" and it runs all of this.
 
 ## Windows export (configured ✓)
 Set up and working. The pieces:
