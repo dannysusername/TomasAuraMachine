@@ -15,7 +15,7 @@ const RECORD_FPS := 60
 const MIN_CLIP_SECONDS := 0.3    ## ignore accidental too-short recordings
 
 ## This build's version. Bump it every time you publish a new build.
-const APP_VERSION := "0.2.0"
+const APP_VERSION := "0.3.0"
 ## A small JSON file you host online describing the latest version. Leave empty
 ## to disable update checks. Format:
 ##   {"version": "0.2.0", "url": "https://.../download", "notes": "What's new"}
@@ -30,6 +30,7 @@ const HINT_FLY := "WASD move • Q/E down/up • Hold right-mouse to look • Sh
 @onready var status_label: Label = $UI/Controls/StatusLabel
 @onready var hint_label: Label = $UI/Controls/HintLabel
 @onready var rec_label: Label = $UI/Controls/RecLabel
+@onready var version_label: Label = $UI/Controls/VersionLabel
 @onready var load_button: Button = $UI/Controls/LoadButton
 @onready var sample_button: Button = $UI/Controls/SampleButton
 @onready var record_button: Button = $UI/Controls/RecordButton
@@ -127,6 +128,7 @@ func _setup_interactive_mode() -> void:
 	update_dialog.add_button("⬇ Download", true, "download")
 	update_dialog.custom_action.connect(_on_update_action)
 	get_window().title = "TomasAuraMachine v%s" % APP_VERSION
+	version_label.text = "v%s" % APP_VERSION
 	record_button.disabled = true
 	_update_mode_ui()
 	_refresh_object_list()

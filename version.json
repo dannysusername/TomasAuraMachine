@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "url": "https://github.com/dannysusername/TomasAuraMachine/releases/latest",
-  "notes": "Build whole scenes! Load several models, place them, fly/pilot them to record their movement, then film the action. (e.g. a dogfight.)"
+  "notes": "The app now shows its version in the bottom-left corner. (Test build for updates.)"
 }

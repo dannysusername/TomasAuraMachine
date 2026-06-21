@@ -84,6 +84,11 @@ layout_mode = 2
 autowrap_mode = 2
 text = "Loading…"
 
+[node name="VersionLabel" type="Label" parent="UI/Controls"]
+modulate = Color(1, 1, 1, 0.5)
+layout_mode = 2
+text = "v?"
+
 [node name="ScenePanel" type="PanelContainer" parent="UI"]
 anchor_left = 1.0
 anchor_right = 1.0
