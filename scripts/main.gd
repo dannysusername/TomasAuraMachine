@@ -15,7 +15,7 @@ const RECORD_FPS := 60
 const MIN_CLIP_SECONDS := 0.3    ## ignore accidental too-short recordings
 
 ## This build's version. Bump it every time you publish a new build.
-const APP_VERSION := "0.4.0"
+const APP_VERSION := "0.5.0"
 ## A small JSON file you host online describing the latest version. Leave empty
 ## to disable update checks. Format:
 ##   {"version": "0.2.0", "url": "https://.../download", "notes": "What's new"}
