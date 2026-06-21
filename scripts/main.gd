@@ -15,7 +15,7 @@ const RECORD_FPS := 60
 const MIN_CLIP_SECONDS := 0.3    ## ignore accidental too-short recordings
 
 ## This build's version. Bump it every time you publish a new build.
-const APP_VERSION := "0.5.0"
+const APP_VERSION := "0.6.0"
 ## A small JSON file you host online describing the latest version. Leave empty
 ## to disable update checks. Format:
 ##   {"version": "0.2.0", "url": "https://.../download", "notes": "What's new"}
@@ -31,6 +31,7 @@ const HINT_FLY := "WASD move • Q/E down/up • Hold right-mouse to look • Sh
 @onready var hint_label: Label = $UI/Controls/HintLabel
 @onready var rec_label: Label = $UI/Controls/RecLabel
 @onready var version_label: Label = $UI/Controls/VersionLabel
+@onready var update_button: Button = $UI/Controls/UpdateButton
 @onready var load_button: Button = $UI/Controls/LoadButton
 @onready var sample_button: Button = $UI/Controls/SampleButton
 @onready var record_button: Button = $UI/Controls/RecordButton
@@ -127,6 +128,7 @@ func _setup_interactive_mode() -> void:
 	# "Update available" popup.
 	update_dialog.add_button("⬇ Download", true, "download")
 	update_dialog.custom_action.connect(_on_update_action)
+	update_button.pressed.connect(_download_update)
 	get_window().title = "TomasAuraMachine v%s" % APP_VERSION
 	version_label.text = "v%s" % APP_VERSION
 	record_button.disabled = true
@@ -804,43 +806,37 @@ func _check_for_updates() -> void:
 	http.timeout = 12.0
 	add_child(http)
 	http.request_completed.connect(_on_update_check_completed)
-	status_label.text = "Checking for updates…"
-	var err := http.request(UPDATE_CHECK_URL)
-	if err != OK:
-		status_label.text = "Update check couldn't start (error %d)." % err
+	http.request(UPDATE_CHECK_URL)   # async; failures are ignored silently
 
 
 func _on_update_check_completed(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
-	# NOTE: verbose on-screen reporting is temporary, to debug the update flow.
-	if result != HTTPRequest.RESULT_SUCCESS:
-		status_label.text = "Update check failed: network result %d (couldn't reach the server)." % result
-		return
-	if code != 200:
-		status_label.text = "Update check: server returned HTTP %d." % code
+	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
 		return
 	var data: Variant = JSON.parse_string(body.get_string_from_utf8())
 	if typeof(data) != TYPE_DICTIONARY:
-		status_label.text = "Update check: couldn't read the version file."
 		return
 	var dict := data as Dictionary
 	var latest := str(dict.get("version", ""))
-	if latest.is_empty():
-		status_label.text = "Update check: no version listed."
+	if latest.is_empty() or not _is_newer(latest, APP_VERSION):
 		return
-	if not _is_newer(latest, APP_VERSION):
-		status_label.text = "You're up to date (v%s)." % APP_VERSION
-		return
+	# Show the popup once, and leave a persistent button so "Later" isn't a dead end.
 	_update_url = str(dict.get("url", ""))
 	var notes := str(dict.get("notes", ""))
-	status_label.text = "Update available: v%s!" % latest
+	update_button.text = "⬇ Update to v%s" % latest
+	update_button.visible = true
 	update_dialog.dialog_text = "A new version (%s) is available.\nYou have v%s.\n\n%s" % [latest, APP_VERSION, notes]
 	update_dialog.popup_centered()
 
 
 func _on_update_action(action: String) -> void:
-	if action == "download" and not _update_url.is_empty():
-		OS.shell_open(_update_url)
+	if action == "download":
+		_download_update()
 	update_dialog.hide()
+
+
+func _download_update() -> void:
+	if not _update_url.is_empty():
+		OS.shell_open(_update_url)
 
 
 func _is_newer(remote: String, local: String) -> bool:

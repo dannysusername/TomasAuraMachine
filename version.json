@@ -1,5 +1,5 @@
 {
-  "version": "0.5.0",
+  "version": "0.6.0",
   "url": "https://github.com/dannysusername/TomasAuraMachine/releases/latest",
-  "notes": "Tiny update to test the in-app updater."
+  "notes": "Added a persistent ⬇ Update button, so clicking 'Later' is no longer a dead end."
 }

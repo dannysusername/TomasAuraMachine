@@ -42,6 +42,12 @@ offset_right = 360.0
 offset_bottom = 140.0
 theme_override_constants/separation = 8
 
+[node name="UpdateButton" type="Button" parent="UI/Controls"]
+visible = false
+modulate = Color(0.6, 1, 0.6, 1)
+layout_mode = 2
+text = "⬇ Update"
+
 [node name="LoadButton" type="Button" parent="UI/Controls"]
 layout_mode = 2
 text = "Add Model (.glb)"
