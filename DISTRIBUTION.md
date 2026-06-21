@@ -18,11 +18,17 @@ Host this anywhere with a stable public URL, then paste that URL into
 
 ```json
 {
-  "version": "0.2.0",
-  "url": "https://example.com/download/TomasAuraMachine-0.2.0.zip",
+  "version": "0.7.0",
+  "url": "https://github.com/dannysusername/TomasAuraMachine/releases/latest",
+  "download": "https://github.com/dannysusername/TomasAuraMachine/releases/download/v0.7.0/TomasAuraMachine-windows.zip",
   "notes": "What's new in this version."
 }
 ```
+
+- `download` is the **direct .zip URL** for one-click auto-install (Windows). It
+  must point at the matching release's asset, so **create the release first**,
+  then publish `version.json`. If `download` is missing, the app falls back to
+  opening `url` (the release page).
 
 ### Where to host it (pick one)
 - **GitHub Releases (recommended, free):** create a repo, publish each build as a
@@ -43,12 +49,13 @@ Host this anywhere with a stable public URL, then paste that URL into
 1. Make your changes.
 2. Bump `APP_VERSION` in `scripts/main.gd` (e.g. `0.1.0` → `0.2.0`).
 3. Rebuild + re-zip (see "Rebuild the Windows package" below).
-4. Publish a release and update `version.json`:
+4. Publish the release FIRST, then update `version.json` (incl. the `download`
+   URL for the new tag) and push:
    ```sh
-   gh release create v0.2.0 build/TomasAuraMachine-windows.zip \
-     --title "v0.2.0" --notes "What changed."
-   # edit version.json -> "version":"0.2.0", "notes":"What changed."
-   git add version.json scripts/main.gd && git commit -m "Release v0.2.0" && git push
+   gh release create v0.8.0 build/TomasAuraMachine-windows.zip \
+     --title "v0.8.0" --notes "What changed."
+   # edit version.json -> version, notes, and download = .../download/v0.8.0/TomasAuraMachine-windows.zip
+   git add version.json scripts/main.gd && git commit -m "Release v0.8.0" && git push
    ```
 5. Next time your brother opens the app, it sees the newer version and prompts him.
 
