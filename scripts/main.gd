@@ -15,7 +15,7 @@ const RECORD_FPS := 60
 const MIN_CLIP_SECONDS := 0.3    ## ignore accidental too-short recordings
 
 ## This build's version. Bump it every time you publish a new build.
-const APP_VERSION := "0.6.0"
+const APP_VERSION := "0.7.0"
 ## A small JSON file you host online describing the latest version. Leave empty
 ## to disable update checks. Format:
 ##   {"version": "0.2.0", "url": "https://.../download", "notes": "What's new"}
@@ -87,8 +87,10 @@ var _replay_time := 0.0
 var _last_mp4 := ""
 var _last_folder := ""
 
-# Where to send the user when they click "Download" on an update.
-var _update_url := ""
+# Update info from the hosted version file.
+var _update_url := ""          # release page (fallback / non-Windows)
+var _update_download := ""     # direct .zip URL (for one-click auto-install)
+var _update_zip_path := ""
 
 
 func _ready() -> void:
@@ -821,6 +823,7 @@ func _on_update_check_completed(result: int, code: int, _headers: PackedStringAr
 		return
 	# Show the popup once, and leave a persistent button so "Later" isn't a dead end.
 	_update_url = str(dict.get("url", ""))
+	_update_download = str(dict.get("download", ""))
 	var notes := str(dict.get("notes", ""))
 	update_button.text = "⬇ Update to v%s" % latest
 	update_button.visible = true
@@ -835,6 +838,90 @@ func _on_update_action(action: String) -> void:
 
 
 func _download_update() -> void:
+	# One-click auto-install on Windows; otherwise just open the download page.
+	if _update_download.is_empty() or not OS.has_feature("windows"):
+		if not _update_url.is_empty():
+			OS.shell_open(_update_url)
+		return
+	_begin_auto_update()
+
+
+func _begin_auto_update() -> void:
+	update_dialog.hide()
+	update_button.disabled = true
+	status_label.text = "Downloading update…"
+	var dir := OS.get_user_data_dir().path_join("update")
+	DirAccess.make_dir_recursive_absolute(dir)
+	_update_zip_path = dir.path_join("update.zip")
+	var http := HTTPRequest.new()
+	http.timeout = 120.0
+	add_child(http)
+	http.download_file = _update_zip_path
+	http.request_completed.connect(_on_update_downloaded)
+	if http.request(_update_download) != OK:
+		_auto_update_failed()
+
+
+func _on_update_downloaded(result: int, code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+		_auto_update_failed()
+		return
+	if not _install_downloaded_update():
+		_auto_update_failed()
+
+
+## Extract the downloaded zip and hand off to a helper that swaps the files
+## (a running .exe can't replace itself) and relaunches. Returns false on any
+## problem so the caller can fall back to opening the page.
+func _install_downloaded_update() -> bool:
+	var dir := OS.get_user_data_dir().path_join("update")
+	var new_dir := dir.path_join("new")
+	DirAccess.make_dir_recursive_absolute(new_dir)
+
+	var reader := ZIPReader.new()
+	if reader.open(_update_zip_path) != OK:
+		return false
+	for fname in reader.get_files():
+		if fname.ends_with("/"):
+			continue
+		var out := new_dir.path_join(fname)
+		DirAccess.make_dir_recursive_absolute(out.get_base_dir())
+		var f := FileAccess.open(out, FileAccess.WRITE)
+		if f == null:
+			reader.close()
+			return false
+		f.store_buffer(reader.read_file(fname))
+		f.close()
+	reader.close()
+
+	var app_exe := OS.get_executable_path()
+	var app_dir := app_exe.get_base_dir()
+	var exe_name := app_exe.get_file()
+	var bat_path := dir.path_join("apply_update.bat")
+	var nl := "\r\n"
+	var bat := "@echo off" + nl
+	bat += ":wait" + nl
+	bat += "tasklist /FI \"IMAGENAME eq " + exe_name + "\" 2>NUL | find /I \"" + exe_name + "\" >NUL" + nl
+	bat += "if not errorlevel 1 ( ping -n 2 127.0.0.1 >NUL & goto wait )" + nl
+	bat += "xcopy /Y /E \"" + new_dir.replace("/", "\\") + "\\*\" \"" + app_dir.replace("/", "\\") + "\\\" >NUL" + nl
+	bat += "start \"\" \"" + app_exe.replace("/", "\\") + "\"" + nl
+	bat += "del \"%~f0\"" + nl
+	var bf := FileAccess.open(bat_path, FileAccess.WRITE)
+	if bf == null:
+		return false
+	bf.store_string(bat)
+	bf.close()
+
+	if OS.create_process("cmd.exe", ["/c", bat_path.replace("/", "\\")]) <= 0:
+		return false
+	status_label.text = "Installing update… the app will restart in a moment."
+	get_tree().quit()
+	return true
+
+
+func _auto_update_failed() -> void:
+	update_button.disabled = false
+	status_label.text = "Auto-update didn't work — opening the download page instead."
 	if not _update_url.is_empty():
 		OS.shell_open(_update_url)
 

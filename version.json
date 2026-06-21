@@ -1,5 +1,6 @@
 {
-  "version": "0.6.0",
+  "version": "0.7.0",
   "url": "https://github.com/dannysusername/TomasAuraMachine/releases/latest",
-  "notes": "Added a persistent ⬇ Update button, so clicking 'Later' is no longer a dead end."
+  "download": "https://github.com/dannysusername/TomasAuraMachine/releases/download/v0.7.0/TomasAuraMachine-windows.zip",
+  "notes": "One-click updates: the app now downloads and installs updates by itself, then restarts."
 }
